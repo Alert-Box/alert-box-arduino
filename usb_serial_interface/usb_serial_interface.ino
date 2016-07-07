@@ -1,48 +1,41 @@
-//YWROBOT
-//Compatible with the Arduino IDE 1.0
-//Library version:1.1
+/**
+ * This program enables the arduino to listen to the serial port, and
+ * responding to some commands. Depending on the recieved command, the
+ * arduino will print something on screen, set the leds to a color, etc.
+ */
+ 
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
+//beware, the modified version of LiquidCrystal_I2C.h must be used.
 
-#include <Adafruit_NeoPixel.h>
+#include <Adafruit_NeoPixel.h>//for the RGB LEDs, we use the Neopixel library from Adafruit.
 #ifdef __AVR__
   #include <avr/power.h>
 #endif
 
-#define PIN 6
+#define LEDS_PIN 6
+#define LEDS_COUNT 3
 
 
 
 LiquidCrystal_I2C lcd(0x27,20,4);  // set the LCD address to 0x27 for a 16 chars and 2 line display
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(3, PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(LEDS_COUNT, LEDS_PIN, NEO_GRB + NEO_KHZ800);
 
 void setup()
 {
   Serial.begin(9600);
   lcd.init();                      // initialize the lcd 
-  lcd.init();
   // Print a message to the LCD.
   lcd.backlight();
 
   strip.begin();
   strip.show(); // Initialize all pixels to 'off'
-
-  
-  /*
-  lcd.setCursor(3,0);
-  lcd.print("Hello, world!");
-  lcd.setCursor(2,1);
-  lcd.print("Ywrobot Arduino!");
-   lcd.setCursor(0,2);
-  lcd.print("Arduino LCM IIC 2004");
-   lcd.setCursor(2,3);
-  lcd.print("Power By Ec-yuan!");*/
 }
 
-String lcdCommand=String("lcd01");
-String ledCommand=String("led01");
+const String lcdCommand="lcd01";
+const String ledCommand="led01";
 const char separator=':';
-const int cmdLength=5;
+const int cmdLength=5; //soon to be deprecated
 
 //lcd commands constants
 const int colLength=2;
@@ -52,7 +45,11 @@ const int rowLength=2;
 const int ledIdLength=2;
 const int colorLength=3;
 
-
+/**
+ * This function pareses the string passed as an argument and searches for known commands.
+ * Depending on the read command it also searches for arguments. Once all data have
+ * been parsed, the corresponding commands are launched.
+ */
 void parseCMD(String s)
 {
   if(s!=NULL)
